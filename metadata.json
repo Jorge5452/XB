@@ -1,0 +1,6 @@
+{
+  "name": "XB Pulse — Rastreador y Comparador Multirregión de Xbox Store",
+  "description": "Plataforma full-stack de rastreo de precios, historial de series temporales, comparador de más de 90 regiones con conversión de divisas en tiempo real y alertas de ofertas de Microsoft Xbox Store.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
