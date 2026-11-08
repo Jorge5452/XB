@@ -3,6 +3,77 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        function ensureWritableFetch() {
+          try {
+            var desc =
+              Object.getOwnPropertyDescriptor(window, 'fetch') ||
+              Object.getOwnPropertyDescriptor(Window.prototype, 'fetch');
+            if (desc && desc.get && !desc.set && desc.configurable !== false) {
+              var currentGetter = desc.get;
+              var customFetch = null;
+              Object.defineProperty(window, 'fetch', {
+                configurable: true,
+                enumerable: true,
+                get: function () {
+                  return customFetch || currentGetter.call(window);
+                },
+                set: function (fn) {
+                  if (typeof fn === 'function') {
+                    customFetch = fn;
+                  }
+                },
+              });
+            }
+          } catch (_) {}
+        }
+        ensureWritableFetch();
+        try {
+          var origDefineProperty = Object.defineProperty;
+          Object.defineProperty = function (obj, prop, descriptor) {
+            if (
+              (obj === window || obj === Window.prototype) &&
+              prop === 'fetch' &&
+              descriptor &&
+              descriptor.get &&
+              !descriptor.set
+            ) {
+              var origGet = descriptor.get;
+              var overrideFn = null;
+              descriptor = {
+                configurable: true,
+                enumerable: descriptor.enumerable !== false,
+                get: function () {
+                  return overrideFn || origGet.call(window);
+                },
+                set: function (fn) {
+                  if (typeof fn === 'function') {
+                    overrideFn = fn;
+                  }
+                },
+              };
+            }
+            return origDefineProperty.call(Object, obj, prop, descriptor);
+          };
+        } catch (_) {}
+        window.addEventListener(
+          'error',
+          function (e) {
+            var msg = String((e && e.message) || '');
+            var file = String((e && e.filename) || '');
+            if (
+              file.indexOf('chrome-extension://') === 0 ||
+              msg.indexOf('Cannot set property fetch') !== -1
+            ) {
+              e.stopImmediatePropagation();
+              e.preventDefault();
+            }
+          },
+          true
+        );
+      })();
+    </script>
     <title>XB Pulse — Rastreador y Comparador Multirregión de Xbox Store</title>
     <meta name="description" content="Plataforma full-stack de rastreo de precios, historial de series temporales, comparador de más de 90 regiones con conversión de divisas en tiempo real y alertas de ofertas de Microsoft Xbox Store." />
     <meta property="og:title" content="XB Pulse — Rastreador y Comparador Multirregión de Xbox Store" />
